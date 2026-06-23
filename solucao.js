@@ -75,7 +75,10 @@ app.get('/baixar-relatorio', async (req, res) => {
         res.status(500).send("Erro ao gerar o relatório.");
     }
 });
-
+// Redireciona a raiz para o endpoint de download
+app.get('/', (req, res) => {
+    res.redirect('/baixar-relatorio');
+});
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando! Link: http://localhost:${PORT}/baixar-relatorio`);
 });
