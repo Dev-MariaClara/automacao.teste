@@ -14,23 +14,16 @@ app.get('/', (req, res) => {
     res.redirect('/baixar-relatorio');
 });
 
-// 2. ROTA DE DOWNLOAD
+// 2. ROTA DE DOWNLOAD (Agora puxando TUDO)
 app.get('/baixar-relatorio', async (req, res) => {
     try {
-        console.log("1. Buscando dados de contas a pagar na API V2...");
-        
-        const opcoesData = { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' };
-        const formatadorBrasil = new Intl.DateTimeFormat('pt-BR', opcoesData);
-        const dataDeHoje = formatadorBrasil.format(new Date()); 
-        
-        console.log(`Data alvo: ${dataDeHoje}`);
+        console.log("1. Buscando TODAS as contas a pagar na API V2...");
 
+        // Parâmetros da API sem os filtros de data
         const formParams = new URLSearchParams();
         formParams.append('token', MEU_TOKEN_FIXO);
         formParams.append('formato', 'JSON');
         formParams.append('situacao', 'aberto');
-        formParams.append('data_ini', dataDeHoje);
-        formParams.append('data_fim', dataDeHoje);
 
         const dadosResponse = await axios.post(OLIST_API_URL, formParams);
 
@@ -41,22 +34,26 @@ app.get('/baixar-relatorio', async (req, res) => {
         const listaBruta = dadosResponse.data.retorno.contas || []; 
         const contasAPagar = listaBruta.map(item => item.conta);
 
-        const contasFiltradas = contasAPagar.filter(conta => conta.data_vencimento === dataDeHoje);
-
-        if (contasFiltradas.length === 0) {
-            return res.status(404).send(`Não há contas em aberto com vencimento para hoje (${dataDeHoje}).`);
+        // Como queremos todas, não há mais o .filter() aqui
+        if (contasAPagar.length === 0) {
+            return res.status(404).send("Não há nenhuma conta em aberto cadastrada no momento.");
         }
 
-        const worksheet = xlsx.utils.json_to_sheet(contasFiltradas);
+        console.log(`Sucesso: ${contasAPagar.length} contas encontradas. Montando Excel...`);
+
+        // Monta o Excel com todas as contas
+        const worksheet = xlsx.utils.json_to_sheet(contasAPagar);
         const workbook = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(workbook, worksheet, 'Contas_Hoje');
+        xlsx.utils.book_append_sheet(workbook, worksheet, 'Todas_Contas');
 
         const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
 
-        const nomeArquivo = `Relatorio_Olist_${dataDeHoje.replace(/\//g, '_')}.xlsx`;
-        res.setHeader('Content-Disposition', `attachment; filename="${nomeArquivo}"`);
+        // Nome do arquivo atualizado
+        res.setHeader('Content-Disposition', 'attachment; filename="Relatorio_Olist_Completo.xlsx"');
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelBuffer);
+
+        console.log("✅ Processo finalizado com sucesso!");
 
     } catch (error) {
         console.log("❌ Erro:", error.message);
