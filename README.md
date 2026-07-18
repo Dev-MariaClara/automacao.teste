@@ -1,6 +1,6 @@
 # 📊 Automação de Contas a Pagar - Olist
 
-Um projeto desenvolvido em **JavaScript** para automatizar a extração e consolidação de dados de contas a pagar do sistema Olist. A ferramenta simplifica a rotina financeira: através do clique em um link, os dados são processados e um arquivo Excel (`.xlsx`) é gerado automaticamente com o relatório diário.
+Um projeto desenvolvido em **JavaScript** para automatizar a extração e consolidação de dados de contas a pagar do sistema Olist. A ferramenta simplifica a rotina financeira: através do clique em um link, os dados são processados e um arquivo Excel é gerado automaticamente com o relatório diário.
 
 ##  Funcionalidades
 - **Geração de Relatórios em Excel:** Exportação diária de dados financeiros consolidados, formatados e prontos para uso.
